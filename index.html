@@ -30,7 +30,7 @@
     <label>Tage bis Ernte: <input type="number" id="growTime"></label>
     <label>Regrow-Zyklus (0 = kein Regrow): <input type="number" id="regrow" value="0"></label>
     <label>Feldanteil (%): <input type="number" id="fieldShare" value="100"></label>
-    <button onclick="addPlant()">Hinzufügen</button>
+    <button onclick="addPlantFromInput()">Hinzufügen</button>
   </div>
 
   <div class="block">
@@ -52,35 +52,40 @@
   <script>
     let plants = [];
 
-    function addPlant() {
-      const totalFields = parseInt(document.getElementById('totalFields').value);
-      const name = document.getElementById('name').value;
-      const cost = parseFloat(document.getElementById('cost').value);
-      const sell = parseFloat(document.getElementById('sell').value);
-      const growTime = parseInt(document.getElementById('growTime').value);
-      const regrow = parseInt(document.getElementById('regrow').value);
-      const fieldShare = parseFloat(document.getElementById('fieldShare').value) / 100;
+    function addPlantFromInput() {
+  const data = {
+    name: document.getElementById('name').value,
+    cost: parseFloat(document.getElementById('cost').value),
+    sell: parseFloat(document.getElementById('sell').value),
+    growTime: parseInt(document.getElementById('growTime').value),
+    regrow: parseInt(document.getElementById('regrow').value),
+    fieldShare: parseFloat(document.getElementById('fieldShare').value)
+  };
+  addPlant(data);
+    }
+    
+    function addPlant(data) {
+  const totalFields = parseInt(document.getElementById('totalFields').value);
+  if (!data.name || data.growTime <= 0 || data.cost < 0 || data.sell < 0 || data.fieldShare <= 0) {
+    alert("Ungültige Pflanzendaten.");
+    return;
+  }
 
-      if (!name || growTime <= 0 || cost < 0 || sell < 0 || fieldShare <= 0) {
-        alert("Bitte alle Felder korrekt ausfüllen.");
-        return;
-      }
+  const fieldsUsed = Math.floor(totalFields * (data.fieldShare / 100));
+  const totalDays = parseInt(document.getElementById('totalDays').value);
+  let harvests = 0;
 
-      const fieldsUsed = Math.floor(totalFields * fieldShare);
-      const totalDays = parseInt(document.getElementById('totalDays').value);
-      let harvests = 0;
+  if (data.regrow && totalDays > data.growTime) {
+    harvests = 1 + Math.floor((totalDays - data.growTime) / data.regrow);
+  } else {
+    harvests = Math.floor(totalDays / data.growTime);
+  }
 
-      if (regrow && totalDays > growTime) {
-        harvests = 1 + Math.floor((totalDays - growTime) / regrow);
-      } else {
-        harvests = Math.floor(totalDays / growTime);
-      }
+  const profitPerField = harvests * (data.sell - data.cost);
+  const totalProfit = profitPerField * fieldsUsed;
 
-      const profitPerField = harvests * (sell - cost);
-      const totalProfit = profitPerField * fieldsUsed;
-
-      plants.push({ name, cost, sell, growTime, regrow, fieldsUsed, harvests, profitPerField, totalProfit });
-      updateTable();
+  plants.push({ ...data, fieldsUsed, harvests, profitPerField, totalProfit });
+  updateTable();
     }
 
     function updateTable() {
