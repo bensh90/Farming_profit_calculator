@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Mistria-Karotte",
+    "cost": 20,
+    "sell": 50,
+    "growTime": 3,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Mystischer Kürbis",
+    "cost": 80,
+    "sell": 200,
+    "growTime": 10,
+    "regrow": 0,
+    "fieldShare": 100
+  }
+]
