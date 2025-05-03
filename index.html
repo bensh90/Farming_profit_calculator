@@ -18,7 +18,10 @@
     <label>Gesamtdauer (Tage): <input type="number" id="totalDays" value="30"></label>
     <label>Feldanzahl: <input type="number" id="totalFields" value="60"></label>
   </div>
-
+  <div class="block">
+    <button onclick="loadPreset('fields_of_mistria.json')">Preset: Fields of Mistria</button>
+    <button onclick="loadPreset('stardew_valley.json')">Preset: Stardew Valley</button>
+  </div>
   <div class="block">
     <h3>Pflanze hinzufügen</h3>
     <label>Name: <input type="text" id="name"></label>
@@ -155,6 +158,15 @@
       output += `<p><strong>Gesamtgewinn bei ${totalFields} Feldern:</strong> ${result.profit * totalFields}</p>`;
 
       document.getElementById('bestCombo').innerHTML = output;
+    }
+
+    function loadPreset(filename) {
+      fetch(filename)
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(p => addPlant(p));
+    })
+    .catch(() => alert("Preset konnte nicht geladen werden."));
     }
   </script>
 </body>
