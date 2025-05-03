@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
   <meta charset="UTF-8">
   <title>Pflanzen-Gewinnrechner</title>
@@ -12,17 +11,10 @@
   </style>
 </head>
 <body>
-  <h2>Pflanzen-Gewinnrechner</h2>
-
-  <div class="block">
+  <h2>Pflanzen-Gewinnrechner</h2>  <div class="block">
     <label>Gesamtdauer (Tage): <input type="number" id="totalDays" value="30"></label>
     <label>Feldanzahl: <input type="number" id="totalFields" value="60"></label>
-  </div>
-  <div class="block">
-    <button onclick="loadPreset('fields_of_mistria.json')">Preset: Fields of Mistria</button>
-    <button onclick="loadPreset('stardew_valley.json')">Preset: Stardew Valley</button>
-  </div>
-  <div class="block">
+  </div>  <div class="block">
     <h3>Pflanze hinzufügen</h3>
     <label>Name: <input type="text" id="name"></label>
     <label>Kosten: <input type="number" id="cost"></label>
@@ -31,9 +23,14 @@
     <label>Regrow-Zyklus (0 = kein Regrow): <input type="number" id="regrow" value="0"></label>
     <label>Feldanteil (%): <input type="number" id="fieldShare" value="100"></label>
     <button onclick="addPlantFromInput()">Hinzufügen</button>
-  </div>
-
-  <div class="block">
+  </div>  <div class="block">
+    <h3>Daten Import/Export</h3>
+    <button onclick="exportPlants()">Pflanzen als JSON exportieren</button>
+    <input type="file" id="fileInput" accept=".json" onchange="importPlants(event)">
+    <br><br>
+    <button onclick="loadPreset('fields-of-mistria.json')">Preset: Fields of Mistria</button>
+    <button onclick="loadPreset('stardew-valley.json')">Preset: Stardew Valley</button>
+  </div>  <div class="block">
     <h3>Pflanzenliste</h3>
     <table id="plantTable">
       <tr>
@@ -41,51 +38,47 @@
       </tr>
     </table>
     <p><strong>Gesamtgewinn aller Pflanzen: <span id="totalProfit">0</span></strong></p>
-  </div>
-
-  <div class="block">
+  </div>  <div class="block">
     <h3>Optimale Nutzung eines Felds</h3>
     <button onclick="optimizeField()">Beste Kombination finden</button>
     <p id="bestCombo"></p>
-  </div>
-
-  <script>
+  </div>  <script>
     let plants = [];
 
     function addPlantFromInput() {
-  const data = {
-    name: document.getElementById('name').value,
-    cost: parseFloat(document.getElementById('cost').value),
-    sell: parseFloat(document.getElementById('sell').value),
-    growTime: parseInt(document.getElementById('growTime').value),
-    regrow: parseInt(document.getElementById('regrow').value),
-    fieldShare: parseFloat(document.getElementById('fieldShare').value)
-  };
-  addPlant(data);
+      const data = {
+        name: document.getElementById('name').value,
+        cost: parseFloat(document.getElementById('cost').value),
+        sell: parseFloat(document.getElementById('sell').value),
+        growTime: parseInt(document.getElementById('growTime').value),
+        regrow: parseInt(document.getElementById('regrow').value),
+        fieldShare: parseFloat(document.getElementById('fieldShare').value)
+      };
+      addPlant(data);
     }
-    
+
     function addPlant(data) {
-  const totalFields = parseInt(document.getElementById('totalFields').value);
-  if (!data.name || data.growTime <= 0 || data.cost < 0 || data.sell < 0 || data.fieldShare <= 0) {
-    alert("Ungültige Pflanzendaten.");
-    return;
-  }
+      const totalFields = parseInt(document.getElementById('totalFields').value);
+      if (!data.name || data.growTime <= 0 || data.cost < 0 || data.sell < 0 || data.fieldShare <= 0) {
+        alert("Ungültige Pflanzendaten.");
+        return;
+      }
 
-  const fieldsUsed = Math.floor(totalFields * (data.fieldShare / 100));
-  const totalDays = parseInt(document.getElementById('totalDays').value);
-  let harvests = 0;
+      const fieldsUsed = Math.floor(totalFields * (data.fieldShare / 100));
+      const totalDays = parseInt(document.getElementById('totalDays').value);
+      let harvests = 0;
 
-  if (data.regrow && totalDays > data.growTime) {
-    harvests = 1 + Math.floor((totalDays - data.growTime) / data.regrow);
-  } else {
-    harvests = Math.floor(totalDays / data.growTime);
-  }
+      if (data.regrow && totalDays > data.growTime) {
+        harvests = 1 + Math.floor((totalDays - data.growTime) / data.regrow);
+      } else {
+        harvests = Math.floor(totalDays / data.growTime);
+      }
 
-  const profitPerField = harvests * (data.sell - data.cost);
-  const totalProfit = profitPerField * fieldsUsed;
+      const profitPerField = harvests * (data.sell - data.cost);
+      const totalProfit = profitPerField * fieldsUsed;
 
-  plants.push({ ...data, fieldsUsed, harvests, profitPerField, totalProfit });
-  updateTable();
+      plants.push({ ...data, fieldsUsed, harvests, profitPerField, totalProfit });
+      updateTable();
     }
 
     function updateTable() {
@@ -116,8 +109,7 @@
 
       function dfs(day) {
         if (day >= totalDays) return { profit: 0, sequence: [] };
-        const key = day;
-        if (memo.has(key)) return memo.get(key);
+        if (memo.has(day)) return memo.get(day);
 
         let best = { profit: 0, sequence: [] };
 
@@ -148,7 +140,7 @@
           }
         }
 
-        memo.set(key, best);
+        memo.set(day, best);
         return best;
       }
 
@@ -165,14 +157,51 @@
       document.getElementById('bestCombo').innerHTML = output;
     }
 
+    function exportPlants() {
+      const data = plants.map(p => ({
+        name: p.name,
+        cost: p.cost,
+        sell: p.sell,
+        growTime: p.growTime,
+        regrow: p.regrow,
+        fieldShare: (p.fieldsUsed / parseInt(document.getElementById('totalFields').value)) * 100
+      }));
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pflanzen.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importPlants(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          plants = [];
+          updateTable();
+          data.forEach(p => addPlant(p));
+        } catch (err) {
+          alert("Fehler beim Laden der Datei.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
     function loadPreset(filename) {
       fetch(filename)
-      .then(res => res.json())
-      .then(data => {
-        data.forEach(p => addPlant(p));
-    })
-    .catch(() => alert("Preset konnte nicht geladen werden."));
+        .then(res => res.json())
+        .then(data => {
+          plants = [];
+          updateTable();
+          data.forEach(p => addPlant(p));
+        })
+        .catch(() => alert("Preset konnte nicht geladen werden."));
     }
-  </script>
-</body>
+  </script></body>
 </html>
