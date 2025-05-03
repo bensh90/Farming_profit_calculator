@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pflanzen-Gewinnrechner</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+    input, button { padding: 5px; margin: 5px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+    .block { margin-bottom: 20px; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <h2>Pflanzen-Gewinnrechner</h2>
+
+  <div class="block">
+    <label>Gesamtdauer (Tage): <input type="number" id="totalDays" value="30"></label>
+    <label>Feldanzahl: <input type="number" id="totalFields" value="60"></label>
+  </div>
+
+  <div class="block">
+    <h3>Pflanze hinzufügen</h3>
+    <label>Name: <input type="text" id="name"></label>
+    <label>Kosten: <input type="number" id="cost"></label>
+    <label>Verkaufspreis: <input type="number" id="sell"></label>
+    <label>Tage bis Ernte: <input type="number" id="growTime"></label>
+    <label>Regrow-Zyklus (0 = kein Regrow): <input type="number" id="regrow" value="0"></label>
+    <label>Feldanteil (%): <input type="number" id="fieldShare" value="100"></label>
+    <button onclick="addPlant()">Hinzufügen</button>
+  </div>
+
+  <div class="block">
+    <h3>Pflanzenliste</h3>
+    <table id="plantTable">
+      <tr>
+        <th>Name</th><th>Felder</th><th>Ernten</th><th>Gewinn/Feld</th><th>Gesamtgewinn</th>
+      </tr>
+    </table>
+    <p><strong>Gesamtgewinn aller Pflanzen: <span id="totalProfit">0</span></strong></p>
+  </div>
+
+  <script>
+    let plants = [];
+
+    function addPlant() {
+      const totalDays = parseInt(document.getElementById('totalDays').value);
+      const totalFields = parseInt(document.getElementById('totalFields').value);
+
+      const name = document.getElementById('name').value;
+      const cost = parseFloat(document.getElementById('cost').value);
+      const sell = parseFloat(document.getElementById('sell').value);
+      const growTime = parseInt(document.getElementById('growTime').value);
+      const regrow = parseInt(document.getElementById('regrow').value);
+      const fieldShare = parseFloat(document.getElementById('fieldShare').value) / 100;
+
+      if (!name || growTime <= 0 || cost < 0 || sell < 0 || fieldShare <= 0) {
+        alert("Bitte alle Felder korrekt ausfüllen.");
+        return;
+      }
+
+      const fieldsUsed = Math.floor(totalFields * fieldShare);
+      let harvests = 0;
+
+      if (regrow && totalDays > growTime) {
+        harvests = 1 + Math.floor((totalDays - growTime) / regrow);
+      } else {
+        harvests = Math.floor(totalDays / growTime);
+      }
+
+      const profitPerField = harvests * (sell - cost);
+      const totalProfit = profitPerField * fieldsUsed;
+
+      plants.push({ name, fieldsUsed, harvests, profitPerField, totalProfit });
+      updateTable();
+    }
+
+    function updateTable() {
+      const table = document.getElementById('plantTable');
+      table.innerHTML = `<tr>
+        <th>Name</th><th>Felder</th><th>Ernten</th><th>Gewinn/Feld</th><th>Gesamtgewinn</th>
+      </tr>`;
+
+      let grandTotal = 0;
+      plants.forEach(p => {
+        const row = `<tr>
+          <td>${p.name}</td>
+          <td>${p.fieldsUsed}</td>
+          <td>${p.harvests}</td>
+          <td>${p.profitPerField}</td>
+          <td>${p.totalProfit}</td>
+        </tr>`;
+        grandTotal += p.totalProfit;
+        table.innerHTML += row;
+      });
+
+      document.getElementById('totalProfit').textContent = grandTotal;
+    }
+  </script>
+</body>
+</html>
