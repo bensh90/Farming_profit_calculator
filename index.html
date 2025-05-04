@@ -135,7 +135,7 @@
       tbody.innerHTML = '';
 
       plants
-        .filter(p => filter === 'all' || p.season.toLowerCase() === filter.toLowerCase())
+        .filter(p => filter.toLowerCase() === 'all' || p.season.toLowerCase() === filter.toLowerCase())
         .forEach(plant => {
           const row = tbody.insertRow();
           row.insertCell().textContent = plant.name;
@@ -194,7 +194,7 @@
       const selectedSeason = document.getElementById('seasonFilter').value;
     
       // Filtere Pflanzen nach Season
-      const filteredPlants = plants.filter(p => selectedSeason === 'all' || p.season === selectedSeason);
+      const filteredPlants = plants.filter(p => selectedSeason.toLowerCase() === 'all' || p.season.toLowerCase() === selectedSeason.toLowerCase());
       const memo = new Map();
     
       function dfs(day) {
