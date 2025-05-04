@@ -158,7 +158,7 @@
     "cost": 300,
     "sell": 135,
     "growTime": 5,
-    "regrow": 0,
+    "regrow": 3,
     "fieldShare": 100
   },
   {
@@ -167,7 +167,7 @@
     "cost": 400,
     "sell": 45,
     "growTime": 14,
-    "regrow": 0,
+    "regrow": 3,
     "fieldShare": 100
   },
   {
@@ -185,7 +185,7 @@
     "cost": 400,
     "sell": 45,
     "growTime": 14,
-    "regrow": 0,
+    "regrow": 3,
     "fieldShare": 100
   },
   {
@@ -194,7 +194,7 @@
     "cost": 400,
     "sell": 45,
     "growTime": 14,
-    "regrow": 0,
+    "regrow": 3,
     "fieldShare": 100
   },
   {
@@ -230,7 +230,7 @@
     "cost": 300,
     "sell": 125,
     "growTime": 5,
-    "regrow": 0,
+    "regrow": 3,
     "fieldShare": 100
   },
   {
@@ -239,7 +239,7 @@
     "cost": 300,
     "sell": 125,
     "growTime": 5,
-    "regrow": 0,
+    "regrow": 3,
     "fieldShare": 100
   },
   {
@@ -284,7 +284,7 @@
     "cost": 300,
     "sell": 125,
     "growTime": 5,
-    "regrow": 0,
+    "regrow": 3,
     "fieldShare": 100
   },
   {
