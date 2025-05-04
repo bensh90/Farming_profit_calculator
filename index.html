@@ -76,8 +76,12 @@
       } else {
         harvests = Math.floor(totalDays / data.growTime);
       }
-
-      const profitPerField = harvests * (data.sell - data.cost);
+      let profitPerField = 0;
+      if (data.regrow > 0) {
+        profitPerField = (harvests * data.sell) - data.cost;
+      } else {
+        profitPerField = harvests * (data.sell - data.cost);
+      }
       const totalProfit = profitPerField * fieldsUsed;
 
       plants.push({ ...data, fieldsUsed, harvests, profitPerField, totalProfit });
