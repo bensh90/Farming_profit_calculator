@@ -200,7 +200,9 @@
       // Speicher für beste Lösung
       let bestPlan = { profit: -Infinity, sequence: [] };
     
+      // Rekursive Funktion zur Berechnung
       function recurse(day, plan, profit) {
+        // Abbrechen, wenn der Tag größer als der verfügbare Zeitraum ist
         if (day >= totalDays) {
           if (profit > bestPlan.profit) {
             bestPlan = { profit, sequence: [...plan] };
@@ -212,11 +214,12 @@
           const remainingDays = totalDays - day;
           const startDay = day;
     
-          if (plant.growTime > remainingDays) continue;
+          if (plant.growTime > remainingDays) continue; // Pflanze kann nicht mehr wachsen
     
           let harvests = 0;
           let usedDays = 0;
     
+          // Berechnung für Regrow-Pflanzen
           if (plant.regrow > 0 && remainingDays > plant.growTime) {
             harvests = 1 + Math.floor((remainingDays - plant.growTime) / plant.regrow);
             usedDays = remainingDays; // gesamte Zeit abdecken
@@ -231,6 +234,7 @@
             ? (harvests * plant.sell - plant.cost)
             : harvests * (plant.sell - plant.cost);
     
+          // Rekursion, nächste Pflanze setzen
           recurse(day + usedDays, [...plan, {
             name: plant.name,
             startDay,
@@ -242,8 +246,10 @@
         }
       }
     
+      // Starte die rekursive Berechnung
       recurse(0, [], 0);
     
+      // Ausgabe der besten Lösung
       const outputDiv = document.getElementById("bestPlanOutput");
       outputDiv.innerHTML = `<h3>Optimale Pflanzfolge (pro Feld)</h3>`;
     
@@ -274,6 +280,7 @@
       outputDiv.appendChild(table);
       outputDiv.innerHTML += `<p><strong>Gesamtgewinn:</strong> ${(bestPlan.profit * totalFields).toFixed(2)}</p>`;
     }
+
 
     
   </script>
