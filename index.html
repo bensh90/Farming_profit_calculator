@@ -87,6 +87,8 @@
   <label class="buttonStyle" for="fileInput" style="cursor:pointer;">
     JSON importieren
   </label>
+  <button class="buttonStyle" onclick="loadPreset('fields_of_mistria.json')">Preset: Fields of Mistria</button>
+  <button class="buttonStyle" onclick="loadPreset('stardew_valley.json')">Preset: Stardew Valley</button>
   <div id="bestPlanOutput" style="margin-top: 30px;"></div>
   
   <script>
@@ -260,6 +262,16 @@
       outputDiv.innerHTML = output;
     }
 
+  function loadPreset(filename) {
+  fetch(filename)
+	.then(res => res.json())
+	.then(data => {
+	  plants = [];
+	  updateTable();
+	  data.forEach(p => addPlant(p));
+	})
+	.catch(() => alert("Preset konnte nicht geladen werden."));
+}
         
   </script>
 </body>
