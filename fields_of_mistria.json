@@ -1,18 +1,317 @@
 [
   {
-    "name": "Karotte",
-    "cost": 20,
-    "sell": 50,
-    "growTime": 3,
+    "name": "Apple",
+    "season": "Fall",
+    "cost": 400,
+    "sell": 45,
+    "growTime": 14,
+    "regrow": 3,
+    "fieldShare": 100
+  },
+  {
+    "name": "Beet",
+    "season": "Winter",
+    "cost": 25,
+    "sell": 40,
+    "growTime": 4,
     "regrow": 0,
     "fieldShare": 100
   },
   {
-    "name": "Kürbis",
-    "cost": 80,
-    "sell": 200,
-    "growTime": 10,
+    "name": "Broccoli",
+    "season": "Fall",
+    "cost": 40,
+    "sell": 75,
+    "growTime": 6,
     "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Cabbage",
+    "season": "Spring",
+    "cost": 70,
+    "sell": 180,
+    "growTime": 9,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Carrot",
+    "season": "Spring",
+    "cost": 40,
+    "sell": 80,
+    "growTime": 6,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Cauliflower",
+    "season": "Winter",
+    "cost": 40,
+    "sell": 75,
+    "growTime": 6,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Peas",
+    "season": "Spring",
+    "cost": 300,
+    "sell": 135,
+    "growTime": 5,
+    "regrow": 3,
+    "fieldShare": 100
+  },
+  {
+    "name": "Catmint",
+    "season": "Summer",
+    "cost": 20,
+    "sell": 30,
+    "growTime": 6,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Cherry",
+    "season": "Spring",
+    "cost": 400,
+    "sell": 45,
+    "growTime": 14,
+    "regrow": 3,
+    "fieldShare": 100
+  },
+  {
+    "name": "Chili Pepper",
+    "season": "Summer",
+    "cost": 40,
+    "sell": 75,
+    "growTime": 6,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Corn",
+    "season": "Summer",
+    "cost": 300,
+    "sell": 125,
+    "growTime": 5,
+    "regrow": 3,
+    "fieldShare": 100
+  },
+  {
+    "name": "Cosmos",
+    "season": "Summer",
+    "cost": 20,
+    "sell": 30,
+    "growTime": 6,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Cranberry",
+    "season": "Fall",
+    "cost": 300,
+    "sell": 125,
+    "growTime": 5,
+    "regrow": 3,
+    "fieldShare": 100
+  },
+  {
+    "name": "Cucumber",
+    "season": "Summer",
+    "cost": 25,
+    "sell": 40,
+    "growTime": 4,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Daikon Radish",
+    "season": "Winter",
+    "cost": 70,
+    "sell": 180,
+    "growTime": 9,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Daisy",
+    "season": "Summer",
+    "cost": 10,
+    "sell": 15,
+    "growTime": 4,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Lemon",
+    "season": "Spring",
+    "cost": 400,
+    "sell": 45,
+    "growTime": 14,
+    "regrow": 3,
+    "fieldShare": 100
+  },
+  {
+    "name": "Onion",
+    "season": "Fall",
+    "cost": 300,
+    "sell": 135,
+    "growTime": 5,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Orange",
+    "season": "Fall",
+    "cost": 400,
+    "sell": 45,
+    "growTime": 14,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Peach",
+    "season": "Summer",
+    "cost": 400,
+    "sell": 45,
+    "growTime": 14,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Pear",
+    "season": "Summer",
+    "cost": 400,
+    "sell": 45,
+    "growTime": 14,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Pomegranate",
+    "season": "Winter",
+    "cost": 400,
+    "sell": 45,
+    "growTime": 14,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Potato",
+    "season": "Spring",
+    "cost": 40,
+    "sell": 75,
+    "growTime": 6,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Pumpkin",
+    "season": "Fall",
+    "cost": 70,
+    "sell": 180,
+    "growTime": 9,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Rice Stalk",
+    "season": "Fall",
+    "cost": 300,
+    "sell": 150,
+    "growTime": 9,
+    "regrow": 3,
+    "fieldShare": 100
+  },
+  {
+    "name": "Snow Peas",
+    "season": "Winter",
+    "cost": 300,
+    "sell": 125,
+    "growTime": 5,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Strawberry",
+    "season": "Spring",
+    "cost": 300,
+    "sell": 125,
+    "growTime": 5,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Sugar Cane",
+    "season": "Summer",
+    "cost": 40,
+    "sell": 80,
+    "growTime": 6,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Sunflower",
+    "season": "Summer",
+    "cost": 20,
+    "sell": 30,
+    "growTime": 6,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Sweet Potato",
+    "season": "Fall",
+    "cost": 25,
+    "sell": 40,
+    "growTime": 4,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Tea",
+    "season": "Summer",
+    "cost": 300,
+    "sell": 135,
+    "growTime": 5,
+    "regrow": 3,
+    "fieldShare": 100
+  },
+  {
+    "name": "Tomato",
+    "season": "Summer",
+    "cost": 300,
+    "sell": 125,
+    "growTime": 5,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Turnip",
+    "season": "Spring",
+    "cost": 25,
+    "sell": 40,
+    "growTime": 4,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Watermelon",
+    "season": "Summer",
+    "cost": 70,
+    "sell": 180,
+    "growTime": 9,
+    "regrow": 0,
+    "fieldShare": 100
+  },
+  {
+    "name": "Wheat",
+    "season": "Fall",
+    "cost": 300,
+    "sell": 150,
+    "growTime": 9,
+    "regrow": 3,
     "fieldShare": 100
   }
 ]
