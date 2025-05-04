@@ -1,67 +1,95 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Pflanzen-Gewinnrechner</title>
+  <title>Pflanzenplaner</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
-    input, button { padding: 5px; margin: 5px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
-    .block { margin-bottom: 20px; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    table, th, td {
+      border: 1px solid gray;
+      border-collapse: collapse;
+      padding: 5px;
+    }
+    label {
+      display: inline-block;
+      margin-top: 8px;
+    }
+    input, select {
+      margin-bottom: 8px;
+    }
     .buttonStyle { padding:6px 12px; background:#007bff; color:white; border-radius:4px; }
   </style>
 </head>
 <body>
-  <h2>Pflanzen-Gewinnrechner</h2>  <div class="block">
-    <label>Gesamtdauer (Tage): <input type="number" id="totalDays" value="30"></label>
-    <label>Feldanzahl: <input type="number" id="totalFields" value="60"></label>
-  </div>  <div class="block">
-    <h3>Pflanze hinzufügen</h3>
-    <label>Name: <input type="text" id="name"></label>
-    <label>Kosten: <input type="number" id="cost"></label>
-    <label>Verkaufspreis: <input type="number" id="sell"></label>
-    <label>Tage bis Ernte: <input type="number" id="growTime"></label>
-    <label>Regrow-Zyklus (0 = kein Regrow): <input type="number" id="regrow" value="0"></label>
-    <label>Feldanteil (%): <input type="number" id="fieldShare" value="100"></label>
-    <label for="season">Jahreszeit:</label>
-    <select id="season">
-      <option value="spring">Spring</option>
-      <option value="summer">Summer</option>
-      <option value="autumn">Autumn</option>
-      <option value="winter">Winter</option>
-    </select>
-    <button class="buttonStyle" onclick="addPlantFromInput()">Hinzufügen</button>
-  </div>  <div class="block">
-    <h3>Daten Import/Export</h3>
-    <button class="buttonStyle" onclick="exportPlants()">Pflanzen als JSON exportieren</button>
-    <input type="file" id="fileInput" accept=".json" onchange="importPlants(event)" style="display:none">
-    <label class="buttonStyle" for="fileInput" style="cursor:pointer;">
-      JSON importieren
-    </label>
-    <br><br>
-    <button class="buttonStyle" onclick="loadPreset('fields_of_mistria.json')">Preset: Fields of Mistria</button>
-    <button class="buttonStyle" onclick="loadPreset('stardew_valley.json')">Preset: Stardew Valley</button>
-  </div>  <div class="block">
-    <h3>Pflanzenliste</h3>
-    <label for="seasonFilter">Jahreszeit filtern:</label>
-    <select id="seasonFilter" onchange="updateTable()">
-      <option value="all">all</option>
-      <option value="spring">Spring</option>
-      <option value="summer">Summer</option>
-      <option value="autumn">Autumn</option>
-      <option value="winter">Winter</option>
-    </select>
-    <table id="plantTable">
+
+  <h1>Pflanzenplaner</h1>
+
+  <label for="totalFields">Feldgröße:</label>
+  <input type="number" id="totalFields" value="60">
+
+  <label for="totalDays">Zeitraum (Tage):</label>
+  <input type="number" id="totalDays" value="30">
+
+  <hr>
+
+  <h2>Neue Pflanze hinzufügen</h2>
+  <input id="name" placeholder="Name">
+  <input id="cost" type="number" placeholder="Kosten">
+  <input id="sell" type="number" placeholder="Verkaufspreis">
+  <input id="growTime" type="number" placeholder="Wachstumsdauer">
+  <input id="regrow" type="number" placeholder="Regrow-Dauer (0 = einmalig)">
+  <input id="fieldShare" type="number" placeholder="Feldanteil %" value="100">
+
+  <select id="season">
+    <option value="spring">Spring</option>
+    <option value="summer">Summer</option>
+    <option value="autumn">Autumn</option>
+    <option value="winter">Winter</option>
+  </select>
+
+  <button class="buttonStyle" onclick="addPlantFromInput()">Hinzufügen</button>
+
+  <hr>
+
+  <h2>Pflanzenliste</h2>
+
+  <label for="seasonFilter">Saison anzeigen:</label>
+  <select id="seasonFilter" onchange="updateTable()">
+    <option value="all">Alle</option>
+    <option value="spring">Spring</option>
+    <option value="summer">Summer</option>
+    <option value="autumn">Autumn</option>
+    <option value="winter">Winter</option>
+  </select>
+
+  <table>
+    <thead>
       <tr>
-        <th>Name</th><th>Felder</th><th>Ernten</th><th>Gewinn/Feld</th><th>Gesamtgewinn</th><th>Jahreszeit</th>
+        <th>Name</th>
+        <th>Kosten</th>
+        <th>Verkauf</th>
+        <th>Wachstum</th>
+        <th>Regrow</th>
+        <th>Feldanteil</th>
+        <th>Ernten</th>
+        <th>Gewinn/Feld</th>
+        <th>Gesamtgewinn</th>
+        <th>Jahreszeit</th>
       </tr>
-    </table>
-    <p><strong>Gesamtgewinn aller Pflanzen: <span id="totalProfit">0</span></strong></p>
-  </div>  <div class="block">
-    <h3>Optimale Nutzung eines Felds</h3>
-    <button style="buttonStyle" onclick="optimizeField()">Beste Kombination finden</button>
-    <p id="bestCombo"></p>
-  </div>  <script>
+    </thead>
+    <tbody id="plantTableBody"></tbody>
+  </table>
+
+  <hr>
+
+  <button class="buttonStyle" onclick="optimizeField()">Optimale Nutzung berechnen</button>
+  <button class="buttonStyle" onclick="downloadJSON()">Download JSON</button>
+  <input type="file" id="fileInput" accept=".json" style="display:none;" onchange="importPlants(event)">
+  <label class="buttonStyle" for="fileInput" style="cursor:pointer;">
+    JSON importieren
+  </label>
+  <span id="fileName">Keine Datei ausgewählt</span>
+
+  <script>
     let plants = [];
 
     function addPlantFromInput() {
@@ -81,20 +109,20 @@
       const totalFields = parseInt(document.getElementById('totalFields').value);
       const totalDays = parseInt(document.getElementById('totalDays').value);
       const fieldsUsed = Math.floor(totalFields * (data.fieldShare / 100));
-    
+
       let harvests = 0;
       if (data.regrow > 0 && totalDays > data.growTime) {
         harvests = 1 + Math.floor((totalDays - data.growTime) / data.regrow);
       } else {
         harvests = Math.floor(totalDays / data.growTime);
       }
-    
+
       const profitPerField = data.regrow > 0
         ? (harvests * data.sell) - data.cost
         : harvests * (data.sell - data.cost);
-    
+
       const totalProfit = profitPerField * fieldsUsed;
-    
+
       plants.push({ ...data, fieldsUsed, harvests, profitPerField, totalProfit });
       updateTable();
     }
@@ -103,7 +131,7 @@
       const filter = document.getElementById('seasonFilter').value;
       const tbody = document.getElementById('plantTableBody');
       tbody.innerHTML = '';
-    
+
       plants
         .filter(p => filter === 'all' || p.season === filter)
         .forEach(plant => {
@@ -121,97 +149,21 @@
         });
     }
 
-    function optimizeField() {
-      const totalFields = parseInt(document.getElementById('totalFields').value);
-      const totalDays = parseInt(document.getElementById('totalDays').value);
-      const selectedSeason = document.getElementById('seasonFilter').value;
-    
-      const validPlants = plants.filter(p => selectedSeason === 'all' || p.season === selectedSeason);
-    
-      if (validPlants.length === 0) {
-        alert("Keine gültigen Pflanzen für die gewählte Saison.");
-        return;
-      }
-    
-      let bestCombo = null;
-      let maxProfit = -Infinity;
-    
-      for (let i = 0; i < validPlants.length; i++) {
-        const p1 = validPlants[i];
-        let harvests1 = (p1.regrow > 0 && totalDays > p1.growTime)
-          ? 1 + Math.floor((totalDays - p1.growTime) / p1.regrow)
-          : Math.floor(totalDays / p1.growTime);
-    
-        const usedDays = (p1.regrow > 0)
-          ? totalDays
-          : harvests1 * p1.growTime;
-    
-        const remainingDays = totalDays - usedDays;
-    
-        const profit1 = (p1.regrow > 0)
-          ? (harvests1 * p1.sell - p1.cost)
-          : harvests1 * (p1.sell - p1.cost);
-    
-        let bestSecond = null;
-        let bestSecondProfit = 0;
-    
-        for (let j = 0; j < validPlants.length; j++) {
-          const p2 = validPlants[j];
-          if (p2 === p1 || p2.growTime > remainingDays) continue;
-    
-          const h2 = (p2.regrow > 0 && remainingDays > p2.growTime)
-            ? 1 + Math.floor((remainingDays - p2.growTime) / p2.regrow)
-            : Math.floor(remainingDays / p2.growTime);
-    
-          const profit2 = (p2.regrow > 0)
-            ? (h2 * p2.sell - p2.cost)
-            : h2 * (p2.sell - p2.cost);
-    
-          if (profit2 > bestSecondProfit) {
-            bestSecond = p2;
-            bestSecondProfit = profit2;
-          }
-        }
-
-    const totalProfit = (profit1 + bestSecondProfit) * totalFields;
-
-    if (totalProfit > maxProfit) {
-      maxProfit = totalProfit;
-      bestCombo = {
-        primary: p1,
-        secondary: bestSecond,
-        profit: totalProfit
-      };
-    }
-  }
-
-  if (bestCombo) {
-    alert(
-      `Beste Kombination:\n` +
-      `1. ${bestCombo.primary.name}\n` +
-      (bestCombo.secondary ? `2. ${bestCombo.secondary.name}\n` : "") +
-      `Ertrag: ${bestCombo.profit.toFixed(2)}`
-    );
-  } else {
-    alert("Keine Kombination gefunden.");
-  }
-}
-
-    function exportPlants() {
-      const data = plants.map(p => ({
+    function downloadJSON() {
+      const dataStr = JSON.stringify(plants.map(p => ({
         name: p.name,
         cost: p.cost,
         sell: p.sell,
         growTime: p.growTime,
         regrow: p.regrow,
-        fieldShare: (p.fieldsUsed / parseInt(document.getElementById('totalFields').value)) * 100,
+        fieldShare: p.fieldShare,
         season: p.season
-      }));
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      })), null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'pflanzen.json';
+      a.download = "plants.json";
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -219,7 +171,7 @@
     function importPlants(event) {
       const file = event.target.files[0];
       if (!file) return;
-    
+
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
@@ -227,6 +179,7 @@
           plants = [];
           updateTable();
           data.forEach(p => addPlant(p));
+          document.getElementById("fileName").textContent = file.name;
         } catch (err) {
           alert("Fehler beim Laden der Datei.");
         }
@@ -234,15 +187,80 @@
       reader.readAsText(file);
     }
 
-    function loadPreset(filename) {
-      fetch(filename)
-        .then(res => res.json())
-        .then(data => {
-          plants = [];
-          updateTable();
-          data.forEach(p => addPlant(p));
-        })
-        .catch(() => alert("Preset konnte nicht geladen werden."));
+    function optimizeField() {
+      const totalFields = parseInt(document.getElementById('totalFields').value);
+      const totalDays = parseInt(document.getElementById('totalDays').value);
+      const selectedSeason = document.getElementById('seasonFilter').value;
+      const validPlants = plants.filter(p => selectedSeason === 'all' || p.season === selectedSeason);
+
+      if (validPlants.length === 0) {
+        alert("Keine gültigen Pflanzen für die gewählte Saison.");
+        return;
+      }
+
+      let bestCombo = null;
+      let maxProfit = -Infinity;
+
+      for (let i = 0; i < validPlants.length; i++) {
+        const p1 = validPlants[i];
+        let harvests1 = (p1.regrow > 0 && totalDays > p1.growTime)
+          ? 1 + Math.floor((totalDays - p1.growTime) / p1.regrow)
+          : Math.floor(totalDays / p1.growTime);
+
+        const usedDays = (p1.regrow > 0)
+          ? totalDays
+          : harvests1 * p1.growTime;
+
+        const remainingDays = totalDays - usedDays;
+
+        const profit1 = (p1.regrow > 0)
+          ? (harvests1 * p1.sell - p1.cost)
+          : harvests1 * (p1.sell - p1.cost);
+
+        let bestSecond = null;
+        let bestSecondProfit = 0;
+
+        for (let j = 0; j < validPlants.length; j++) {
+          const p2 = validPlants[j];
+          if (p2 === p1 || p2.growTime > remainingDays) continue;
+
+          const h2 = (p2.regrow > 0 && remainingDays > p2.growTime)
+            ? 1 + Math.floor((remainingDays - p2.growTime) / p2.regrow)
+            : Math.floor(remainingDays / p2.growTime);
+
+          const profit2 = (p2.regrow > 0)
+            ? (h2 * p2.sell - p2.cost)
+            : h2 * (p2.sell - p2.cost);
+
+          if (profit2 > bestSecondProfit) {
+            bestSecond = p2;
+            bestSecondProfit = profit2;
+          }
+        }
+
+        const totalProfit = (profit1 + bestSecondProfit) * totalFields;
+
+        if (totalProfit > maxProfit) {
+          maxProfit = totalProfit;
+          bestCombo = {
+            primary: p1,
+            secondary: bestSecond,
+            profit: totalProfit
+          };
+        }
+      }
+
+      if (bestCombo) {
+        alert(
+          `Beste Kombination:\n` +
+          `1. ${bestCombo.primary.name}\n` +
+          (bestCombo.secondary ? `2. ${bestCombo.secondary.name}\n` : "") +
+          `Ertrag: ${bestCombo.profit.toFixed(2)}`
+        );
+      } else {
+        alert("Keine Kombination gefunden.");
+      }
     }
-  </script></body>
+  </script>
+</body>
 </html>
