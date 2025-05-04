@@ -87,8 +87,8 @@
   <label class="buttonStyle" for="fileInput" style="cursor:pointer;">
     JSON importieren
   </label>
-  <span id="fileName">Keine Datei ausgewählt</span>
-
+  <div id="bestPlanOutput" style="margin-top: 30px;"></div>
+  
   <script>
     let plants = [];
 
@@ -179,7 +179,6 @@
           plants = [];
           updateTable();
           data.forEach(p => addPlant(p));
-          document.getElementById("fileName").textContent = file.name;
         } catch (err) {
           alert("Fehler beim Laden der Datei.");
         }
@@ -192,75 +191,91 @@
       const totalDays = parseInt(document.getElementById('totalDays').value);
       const selectedSeason = document.getElementById('seasonFilter').value;
       const validPlants = plants.filter(p => selectedSeason === 'all' || p.season === selectedSeason);
-
+    
       if (validPlants.length === 0) {
         alert("Keine gültigen Pflanzen für die gewählte Saison.");
         return;
       }
-
-      let bestCombo = null;
-      let maxProfit = -Infinity;
-
-      for (let i = 0; i < validPlants.length; i++) {
-        const p1 = validPlants[i];
-        let harvests1 = (p1.regrow > 0 && totalDays > p1.growTime)
-          ? 1 + Math.floor((totalDays - p1.growTime) / p1.regrow)
-          : Math.floor(totalDays / p1.growTime);
-
-        const usedDays = (p1.regrow > 0)
-          ? totalDays
-          : harvests1 * p1.growTime;
-
-        const remainingDays = totalDays - usedDays;
-
-        const profit1 = (p1.regrow > 0)
-          ? (harvests1 * p1.sell - p1.cost)
-          : harvests1 * (p1.sell - p1.cost);
-
-        let bestSecond = null;
-        let bestSecondProfit = 0;
-
-        for (let j = 0; j < validPlants.length; j++) {
-          const p2 = validPlants[j];
-          if (p2 === p1 || p2.growTime > remainingDays) continue;
-
-          const h2 = (p2.regrow > 0 && remainingDays > p2.growTime)
-            ? 1 + Math.floor((remainingDays - p2.growTime) / p2.regrow)
-            : Math.floor(remainingDays / p2.growTime);
-
-          const profit2 = (p2.regrow > 0)
-            ? (h2 * p2.sell - p2.cost)
-            : h2 * (p2.sell - p2.cost);
-
-          if (profit2 > bestSecondProfit) {
-            bestSecond = p2;
-            bestSecondProfit = profit2;
+    
+      // Speicher für beste Lösung
+      let bestPlan = { profit: -Infinity, sequence: [] };
+    
+      function recurse(day, plan, profit) {
+        if (day >= totalDays) {
+          if (profit > bestPlan.profit) {
+            bestPlan = { profit, sequence: [...plan] };
           }
+          return;
         }
-
-        const totalProfit = (profit1 + bestSecondProfit) * totalFields;
-
-        if (totalProfit > maxProfit) {
-          maxProfit = totalProfit;
-          bestCombo = {
-            primary: p1,
-            secondary: bestSecond,
-            profit: totalProfit
-          };
+    
+        for (const plant of validPlants) {
+          const remainingDays = totalDays - day;
+          const startDay = day;
+    
+          if (plant.growTime > remainingDays) continue;
+    
+          let harvests = 0;
+          let usedDays = 0;
+    
+          if (plant.regrow > 0 && remainingDays > plant.growTime) {
+            harvests = 1 + Math.floor((remainingDays - plant.growTime) / plant.regrow);
+            usedDays = remainingDays; // gesamte Zeit abdecken
+          } else {
+            harvests = Math.floor(remainingDays / plant.growTime);
+            usedDays = harvests * plant.growTime;
+          }
+    
+          if (harvests <= 0) continue;
+    
+          const profitPerField = plant.regrow > 0
+            ? (harvests * plant.sell - plant.cost)
+            : harvests * (plant.sell - plant.cost);
+    
+          recurse(day + usedDays, [...plan, {
+            name: plant.name,
+            startDay,
+            usedDays,
+            harvests,
+            profitPerField,
+            regrow: plant.regrow,
+          }], profit + profitPerField);
         }
       }
-
-      if (bestCombo) {
-        alert(
-          `Beste Kombination:\n` +
-          `1. ${bestCombo.primary.name}\n` +
-          (bestCombo.secondary ? `2. ${bestCombo.secondary.name}\n` : "") +
-          `Ertrag: ${bestCombo.profit.toFixed(2)}`
-        );
-      } else {
-        alert("Keine Kombination gefunden.");
+    
+      recurse(0, [], 0);
+    
+      const outputDiv = document.getElementById("bestPlanOutput");
+      outputDiv.innerHTML = `<h3>Optimale Pflanzfolge (pro Feld)</h3>`;
+    
+      if (bestPlan.sequence.length === 0) {
+        outputDiv.innerHTML += "<p>Keine passende Kombination gefunden.</p>";
+        return;
       }
+    
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <tr>
+          <th>Pflanze</th>
+          <th>Start-Tag</th>
+          <th>Nutzungstage</th>
+          <th>Ernten</th>
+          <th>Gewinn/Feld</th>
+        </tr>
+      `;
+      bestPlan.sequence.forEach(p => {
+        const row = table.insertRow();
+        row.insertCell().textContent = p.name;
+        row.insertCell().textContent = p.startDay;
+        row.insertCell().textContent = p.usedDays;
+        row.insertCell().textContent = p.harvests;
+        row.insertCell().textContent = p.profitPerField.toFixed(2);
+      });
+    
+      outputDiv.appendChild(table);
+      outputDiv.innerHTML += `<p><strong>Gesamtgewinn:</strong> ${(bestPlan.profit * totalFields).toFixed(2)}</p>`;
     }
+
+    
   </script>
 </body>
 </html>
