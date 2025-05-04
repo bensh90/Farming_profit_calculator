@@ -187,102 +187,80 @@
     }
 
     function optimizeField() {
-      const totalFields = parseInt(document.getElementById('totalFields').value);
       const totalDays = parseInt(document.getElementById('totalDays').value);
+      const totalFields = parseInt(document.getElementById('totalFields').value);
       const selectedSeason = document.getElementById('seasonFilter').value;
-      const validPlants = plants.filter(p => selectedSeason === 'all' || p.season === selectedSeason);
     
-      if (validPlants.length === 0) {
-        alert("Keine gültigen Pflanzen für die gewählte Saison.");
-        return;
-      }
+      // Filtere Pflanzen nach Season
+      const filteredPlants = plants.filter(p => selectedSeason === 'all' || p.season === selectedSeason);
+      const memo = new Map();
     
-      // Speicher für beste Lösung
-      let bestPlan = { profit: -Infinity, sequence: [] };
+      function dfs(day) {
+        if (day >= totalDays) return { profit: 0, sequence: [] };
+        if (memo.has(day)) return memo.get(day);
+        
+        let best = { profit: 0, sequence: [] };
+        for (const plant of filteredPlants) {
+          let usable = totalDays - day;
+          let firstGrow = plant.growTime;
+          let totalHarvests = 0;
+          let daysUsed = 0;
     
-      // Rekursive Funktion zur Berechnung
-      function recurse(day, plan, profit) {
-        // Abbrechen, wenn der Tag größer als der verfügbare Zeitraum ist
-        if (day >= totalDays) {
-          if (profit > bestPlan.profit) {
-            bestPlan = { profit, sequence: [...plan] };
-          }
-          return;
-        }
-    
-        for (const plant of validPlants) {
-          const remainingDays = totalDays - day;
-          const startDay = day;
-    
-          if (plant.growTime > remainingDays) continue; // Pflanze kann nicht mehr wachsen
-    
-          let harvests = 0;
-          let usedDays = 0;
-    
-          // Berechnung für Regrow-Pflanzen
-          if (plant.regrow > 0 && remainingDays > plant.growTime) {
-            harvests = 1 + Math.floor((remainingDays - plant.growTime) / plant.regrow);
-            usedDays = remainingDays; // gesamte Zeit abdecken
-          } else {
-            harvests = Math.floor(remainingDays / plant.growTime);
-            usedDays = harvests * plant.growTime;
+          if (plant.regrow > 0 && usable >= firstGrow) {
+            totalHarvests = 1 + Math.floor((usable - firstGrow) / plant.regrow);
+            daysUsed = firstGrow + (totalHarvests - 1) * plant.regrow;
+          } else if (usable >= firstGrow) {
+            totalHarvests = Math.floor(usable / firstGrow);
+            daysUsed = totalHarvests * firstGrow;
           }
     
-          if (harvests <= 0) continue;
+          if (totalHarvests > 0) {
+            const profit = plant.regrow > 0
+              ? (totalHarvests * plant.sell) - plant.cost
+              : totalHarvests * (plant.sell - plant.cost);
+            const next = dfs(day + daysUsed);
+            const totalProfit = profit + next.profit;
     
-          const profitPerField = plant.regrow > 0
-            ? (harvests * plant.sell - plant.cost)
-            : harvests * (plant.sell - plant.cost);
-    
-          // Rekursion, nächste Pflanze setzen
-          recurse(day + usedDays, [...plan, {
-            name: plant.name,
-            startDay,
-            usedDays,
-            harvests,
-            profitPerField,
-            regrow: plant.regrow,
-          }], profit + profitPerField);
+            if (totalProfit > best.profit) {
+              best = {
+                profit: totalProfit,
+                sequence: [{
+                  name: plant.name,
+                  startDay: day,
+                  days: daysUsed,
+                  harvests: totalHarvests,
+                  profit
+                }].concat(next.sequence)
+              };
+            }
+          }
         }
+        memo.set(day, best);
+        return best;
       }
     
-      // Starte die rekursive Berechnung
-      recurse(0, [], 0);
+      const result = dfs(0);
     
-      // Ausgabe der besten Lösung
-      const outputDiv = document.getElementById("bestPlanOutput");
-      outputDiv.innerHTML = `<h3>Optimale Pflanzfolge (pro Feld)</h3>`;
-    
-      if (bestPlan.sequence.length === 0) {
-        outputDiv.innerHTML += "<p>Keine passende Kombination gefunden.</p>";
-        return;
-      }
-    
-      const table = document.createElement("table");
-      table.innerHTML = `
-        <tr>
-          <th>Pflanze</th>
-          <th>Start-Tag</th>
-          <th>Nutzungstage</th>
-          <th>Ernten</th>
-          <th>Gewinn/Feld</th>
-        </tr>
-      `;
-      bestPlan.sequence.forEach(p => {
-        const row = table.insertRow();
-        row.insertCell().textContent = p.name;
-        row.insertCell().textContent = p.startDay;
-        row.insertCell().textContent = p.usedDays;
-        row.insertCell().textContent = p.harvests;
-        row.insertCell().textContent = p.profitPerField.toFixed(2);
+      // 📦 Ausgabe
+      const outputDiv = document.getElementById('bestPlanOutput');
+      let output = `<h3>Beste Kombination pro Feld (innerhalb ${totalDays} Tage)</h3><table>
+      <tr><th>Pflanze</th><th>Start-Tag</th><th>Dauer</th><th>Ernten</th><th>Gewinn</th></tr>`;
+      result.sequence.forEach(step => {
+        output += `<tr>
+          <td>${step.name}</td>
+          <td>${step.startDay}</td>
+          <td>${step.days}</td>
+          <td>${step.harvests}</td>
+          <td>${step.profit}</td>
+        </tr>`;
       });
-    
-      outputDiv.appendChild(table);
-      outputDiv.innerHTML += `<p><strong>Gesamtgewinn:</strong> ${(bestPlan.profit * totalFields).toFixed(2)}</p>`;
+      output += `</table>`;
+      output += `<p><strong>Gewinn pro Feld:</strong> ${result.profit}</p>`;
+      output += `<p><strong>Gesamtgewinn bei ${totalFields} Feldern:</strong> ${result.profit * totalFields}</p>`;
+      outputDiv.innerHTML = output;
     }
 
-
-    
+        
   </script>
 </body>
 </html>
