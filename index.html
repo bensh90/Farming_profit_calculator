@@ -8,6 +8,7 @@
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
     .block { margin-bottom: 20px; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .buttonStyle { padding:6px 12px; background:#007bff; color:white; border-radius:4px; }
   </style>
 </head>
 <body>
@@ -22,17 +23,17 @@
     <label>Tage bis Ernte: <input type="number" id="growTime"></label>
     <label>Regrow-Zyklus (0 = kein Regrow): <input type="number" id="regrow" value="0"></label>
     <label>Feldanteil (%): <input type="number" id="fieldShare" value="100"></label>
-    <button onclick="addPlantFromInput()">Hinzufügen</button>
+    <button class="buttonStyle" onclick="addPlantFromInput()">Hinzufügen</button>
   </div>  <div class="block">
     <h3>Daten Import/Export</h3>
-    <button onclick="exportPlants()">Pflanzen als JSON exportieren</button>
+    <button class="buttonStyle" onclick="exportPlants()">Pflanzen als JSON exportieren</button>
     <input type="file" id="fileInput" accept=".json" onchange="importPlants(event)" style="display:none">
-    <label for="fileInput" style="padding:6px 12px; background:#007bff; color:white; border-radius:4px; cursor:pointer;">
+    <label class="buttonStyle" for="fileInput" style="cursor:pointer;">
       JSON importieren
     </label>
     <br><br>
-    <button onclick="loadPreset('fields_of_mistria.json')">Preset: Fields of Mistria</button>
-    <button onclick="loadPreset('stardew_valley.json')">Preset: Stardew Valley</button>
+    <button class="buttonStyle" onclick="loadPreset('fields_of_mistria.json')">Preset: Fields of Mistria</button>
+    <button class="buttonStyle" onclick="loadPreset('stardew_valley.json')">Preset: Stardew Valley</button>
   </div>  <div class="block">
     <h3>Pflanzenliste</h3>
     <table id="plantTable">
@@ -43,7 +44,7 @@
     <p><strong>Gesamtgewinn aller Pflanzen: <span id="totalProfit">0</span></strong></p>
   </div>  <div class="block">
     <h3>Optimale Nutzung eines Felds</h3>
-    <button onclick="optimizeField()">Beste Kombination finden</button>
+    <button style="buttonStyle" onclick="optimizeField()">Beste Kombination finden</button>
     <p id="bestCombo"></p>
   </div>  <script>
     let plants = [];
@@ -135,7 +136,7 @@
           }
 
           if (totalHarvests > 0) {
-            const profit = totalHarvests * (plant.sell - plant.cost);
+            const profit = plant.regrow > 0 ? (totalHarvests * plant.sell) - plant.cost : totalHarvests * (plant.sell - plant.cost);
             const next = dfs(day + daysUsed);
             const totalProfit = profit + next.profit;
             if (totalProfit > best.profit) {
