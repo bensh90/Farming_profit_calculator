@@ -135,7 +135,7 @@
       tbody.innerHTML = '';
 
       plants
-        .filter(p => filter === 'all' || p.season === filter)
+        .filter(p => filter === 'all' || p.season.toLowerCase() === filter.toLowerCase())
         .forEach(plant => {
           const row = tbody.insertRow();
           row.insertCell().textContent = plant.name;
