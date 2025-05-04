@@ -23,6 +23,13 @@
     <label>Tage bis Ernte: <input type="number" id="growTime"></label>
     <label>Regrow-Zyklus (0 = kein Regrow): <input type="number" id="regrow" value="0"></label>
     <label>Feldanteil (%): <input type="number" id="fieldShare" value="100"></label>
+    <label for="season">Jahreszeit:</label>
+    <select id="season">
+      <option value="spring">Spring</option>
+      <option value="summer">Summer</option>
+      <option value="autumn">Autumn</option>
+      <option value="winter">Winter</option>
+    </select>
     <button class="buttonStyle" onclick="addPlantFromInput()">Hinzufügen</button>
   </div>  <div class="block">
     <h3>Daten Import/Export</h3>
@@ -36,9 +43,17 @@
     <button class="buttonStyle" onclick="loadPreset('stardew_valley.json')">Preset: Stardew Valley</button>
   </div>  <div class="block">
     <h3>Pflanzenliste</h3>
+    <label for="seasonFilter">Jahreszeit filtern:</label>
+    <select id="seasonFilter" onchange="updateTable()">
+      <option value="all">all</option>
+      <option value="spring">Spring</option>
+      <option value="summer">Summer</option>
+      <option value="autumn">Autumn</option>
+      <option value="winter">Winter</option>
+    </select>
     <table id="plantTable">
       <tr>
-        <th>Name</th><th>Felder</th><th>Ernten</th><th>Gewinn/Feld</th><th>Gesamtgewinn</th>
+        <th>Name</th><th>Felder</th><th>Ernten</th><th>Gewinn/Feld</th><th>Gesamtgewinn</th><th>Jahreszeit</th>
       </tr>
     </table>
     <p><strong>Gesamtgewinn aller Pflanzen: <span id="totalProfit">0</span></strong></p>
@@ -56,114 +71,131 @@
         sell: parseFloat(document.getElementById('sell').value),
         growTime: parseInt(document.getElementById('growTime').value),
         regrow: parseInt(document.getElementById('regrow').value),
-        fieldShare: parseFloat(document.getElementById('fieldShare').value)
+        fieldShare: parseFloat(document.getElementById('fieldShare').value),
+        season: document.getElementById('season').value
       };
       addPlant(data);
     }
 
     function addPlant(data) {
       const totalFields = parseInt(document.getElementById('totalFields').value);
-      if (!data.name || data.growTime <= 0 || data.cost < 0 || data.sell < 0 || data.fieldShare <= 0) {
-        alert("Ungültige Pflanzendaten.");
-        return;
-      }
-
-      const fieldsUsed = Math.floor(totalFields * (data.fieldShare / 100));
       const totalDays = parseInt(document.getElementById('totalDays').value);
+      const fieldsUsed = Math.floor(totalFields * (data.fieldShare / 100));
+    
       let harvests = 0;
-
-      if (data.regrow && totalDays > data.growTime) {
+      if (data.regrow > 0 && totalDays > data.growTime) {
         harvests = 1 + Math.floor((totalDays - data.growTime) / data.regrow);
       } else {
         harvests = Math.floor(totalDays / data.growTime);
       }
-      let profitPerField = 0;
-      if (data.regrow > 0) {
-        profitPerField = (harvests * data.sell) - data.cost;
-      } else {
-        profitPerField = harvests * (data.sell - data.cost);
-      }
+    
+      const profitPerField = data.regrow > 0
+        ? (harvests * data.sell) - data.cost
+        : harvests * (data.sell - data.cost);
+    
       const totalProfit = profitPerField * fieldsUsed;
-
+    
       plants.push({ ...data, fieldsUsed, harvests, profitPerField, totalProfit });
       updateTable();
     }
 
     function updateTable() {
-      const table = document.getElementById('plantTable');
-      table.innerHTML = `<tr>
-        <th>Name</th><th>Felder</th><th>Ernten</th><th>Gewinn/Feld</th><th>Gesamtgewinn</th>
-      </tr>`;
-
-      let grandTotal = 0;
-      plants.forEach(p => {
-        const row = `<tr>
-          <td>${p.name}</td>
-          <td>${p.fieldsUsed}</td>
-          <td>${p.harvests}</td>
-          <td>${p.profitPerField}</td>
-          <td>${p.totalProfit}</td>
-        </tr>`;
-        grandTotal += p.totalProfit;
-        table.innerHTML += row;
-      });
-
-      document.getElementById('totalProfit').textContent = grandTotal;
+      const filter = document.getElementById('seasonFilter').value;
+      const tbody = document.getElementById('plantTableBody');
+      tbody.innerHTML = '';
+    
+      plants
+        .filter(p => filter === 'all' || p.season === filter)
+        .forEach(plant => {
+          const row = tbody.insertRow();
+          row.insertCell().textContent = plant.name;
+          row.insertCell().textContent = plant.cost;
+          row.insertCell().textContent = plant.sell;
+          row.insertCell().textContent = plant.growTime;
+          row.insertCell().textContent = plant.regrow;
+          row.insertCell().textContent = plant.fieldShare + "%";
+          row.insertCell().textContent = plant.harvests;
+          row.insertCell().textContent = plant.profitPerField.toFixed(2);
+          row.insertCell().textContent = plant.totalProfit.toFixed(2);
+          row.insertCell().textContent = plant.season.charAt(0).toUpperCase() + plant.season.slice(1);
+        });
     }
 
     function optimizeField() {
+      const totalFields = parseInt(document.getElementById('totalFields').value);
       const totalDays = parseInt(document.getElementById('totalDays').value);
-      const memo = new Map();
-
-      function dfs(day) {
-        if (day >= totalDays) return { profit: 0, sequence: [] };
-        if (memo.has(day)) return memo.get(day);
-
-        let best = { profit: 0, sequence: [] };
-
-        for (const plant of plants) {
-          let usable = totalDays - day;
-          let firstGrow = plant.growTime;
-          let totalHarvests = 0;
-          let daysUsed = 0;
-
-          if (plant.regrow > 0 && usable >= firstGrow) {
-            totalHarvests = 1 + Math.floor((usable - firstGrow) / plant.regrow);
-            daysUsed = firstGrow + (totalHarvests - 1) * plant.regrow;
-          } else if (usable >= firstGrow) {
-            totalHarvests = 1;
-            daysUsed = firstGrow;
-          }
-
-          if (totalHarvests > 0) {
-            const profit = plant.regrow > 0 ? (totalHarvests * plant.sell) - plant.cost : totalHarvests * (plant.sell - plant.cost);
-            const next = dfs(day + daysUsed);
-            const totalProfit = profit + next.profit;
-            if (totalProfit > best.profit) {
-              best = {
-                profit: totalProfit,
-                sequence: [{ name: plant.name, days: daysUsed, harvests: totalHarvests, profit }].concat(next.sequence)
-              };
-            }
+      const selectedSeason = document.getElementById('seasonFilter').value;
+    
+      const validPlants = plants.filter(p => selectedSeason === 'all' || p.season === selectedSeason);
+    
+      if (validPlants.length === 0) {
+        alert("Keine gültigen Pflanzen für die gewählte Saison.");
+        return;
+      }
+    
+      let bestCombo = null;
+      let maxProfit = -Infinity;
+    
+      for (let i = 0; i < validPlants.length; i++) {
+        const p1 = validPlants[i];
+        let harvests1 = (p1.regrow > 0 && totalDays > p1.growTime)
+          ? 1 + Math.floor((totalDays - p1.growTime) / p1.regrow)
+          : Math.floor(totalDays / p1.growTime);
+    
+        const usedDays = (p1.regrow > 0)
+          ? totalDays
+          : harvests1 * p1.growTime;
+    
+        const remainingDays = totalDays - usedDays;
+    
+        const profit1 = (p1.regrow > 0)
+          ? (harvests1 * p1.sell - p1.cost)
+          : harvests1 * (p1.sell - p1.cost);
+    
+        let bestSecond = null;
+        let bestSecondProfit = 0;
+    
+        for (let j = 0; j < validPlants.length; j++) {
+          const p2 = validPlants[j];
+          if (p2 === p1 || p2.growTime > remainingDays) continue;
+    
+          const h2 = (p2.regrow > 0 && remainingDays > p2.growTime)
+            ? 1 + Math.floor((remainingDays - p2.growTime) / p2.regrow)
+            : Math.floor(remainingDays / p2.growTime);
+    
+          const profit2 = (p2.regrow > 0)
+            ? (h2 * p2.sell - p2.cost)
+            : h2 * (p2.sell - p2.cost);
+    
+          if (profit2 > bestSecondProfit) {
+            bestSecond = p2;
+            bestSecondProfit = profit2;
           }
         }
 
-        memo.set(day, best);
-        return best;
-      }
+    const totalProfit = (profit1 + bestSecondProfit) * totalFields;
 
-      const result = dfs(0);
-      let output = `<strong>Beste Kombination pro Feld (innerhalb ${totalDays} Tage):</strong><br><ul>`;
-      result.sequence.forEach(step => {
-        output += `<li>${step.name} für ${step.days} Tage (${step.harvests}x Ernte) → Gewinn: ${step.profit}</li>`;
-      });
-      output += `</ul><p><strong>Gewinn pro Feld:</strong> ${result.profit}</p>`;
-
-      const totalFields = parseInt(document.getElementById('totalFields').value);
-      output += `<p><strong>Gesamtgewinn bei ${totalFields} Feldern:</strong> ${result.profit * totalFields}</p>`;
-
-      document.getElementById('bestCombo').innerHTML = output;
+    if (totalProfit > maxProfit) {
+      maxProfit = totalProfit;
+      bestCombo = {
+        primary: p1,
+        secondary: bestSecond,
+        profit: totalProfit
+      };
     }
+  }
+
+  if (bestCombo) {
+    alert(
+      `Beste Kombination:\n` +
+      `1. ${bestCombo.primary.name}\n` +
+      (bestCombo.secondary ? `2. ${bestCombo.secondary.name}\n` : "") +
+      `Ertrag: ${bestCombo.profit.toFixed(2)}`
+    );
+  } else {
+    alert("Keine Kombination gefunden.");
+  }
+}
 
     function exportPlants() {
       const data = plants.map(p => ({
@@ -172,7 +204,8 @@
         sell: p.sell,
         growTime: p.growTime,
         regrow: p.regrow,
-        fieldShare: (p.fieldsUsed / parseInt(document.getElementById('totalFields').value)) * 100
+        fieldShare: (p.fieldsUsed / parseInt(document.getElementById('totalFields').value)) * 100,
+        season: p.season
       }));
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -186,7 +219,7 @@
     function importPlants(event) {
       const file = event.target.files[0];
       if (!file) return;
-
+    
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
